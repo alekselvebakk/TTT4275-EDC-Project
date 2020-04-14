@@ -1,1 +1,1 @@
-# TTT4275-ED-C-Project
+# TTT4275-EDC-Project
