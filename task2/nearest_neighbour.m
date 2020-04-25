@@ -50,12 +50,16 @@ save("NN_allSamples_both1kChunks.mat","results_list");
 % confusion matrix is, real values on vertical axis, probabilities 
 % for that given value on horizontal axis.
 
-%load("NN_allSamples_both1kChunks.mat")
-%load("./MNist_ttt4275/data_all.mat")
+% load("NN_allSamples_both1kChunks.mat")
+% load("./MNist_ttt4275/data_all.mat")
+
+N              = size(testlab,1);
 
 matrix_counter = zeros(10,10,"int16");
 total_counter  = zeros(10,1,"int16");
-N              = size(testlab,1);
+
+error_indices  = zeros(10,1,"int16");
+valid_indices  = zeros(10,1,"int16");
 
 for i=1:N
     actual = testlab(i) + 1;      % offset by 1 for indexing
@@ -63,9 +67,49 @@ for i=1:N
     total_counter(actual) = total_counter(actual) + 1;
     matrix_counter(actual,est) = ...
         matrix_counter(actual,est) + 1;
+    %for plotting corrects and errors
+    if valid_indices(actual) == 0 && actual == est
+        valid_indices(actual) = i;
+    elseif error_indices(actual) == 0 && actual ~= est
+        error_indices(actual) = i;
+    end
 end
 
 confusion_matrix = matrix_counter;
 error_rate = 1 - trace(confusion_matrix)/N;
 save("NN_confusion_and_errRate_allSamples_both1kChunks.mat",...
     "confusion_matrix","error_rate");
+
+%% plotting corrects and errors
+
+figure(1);
+for i = 1:10
+    if i == 1
+        index = 2;
+    else
+        index = i + 2;
+    end
+    subplot(4,3,index);
+    
+    x = zeros(28, 28, "uint8");
+    x(:) = testv(valid_indices(i),:);
+    image(x');
+    title("Correct, ans: " + num2str(i-1));
+end
+sgtitle("Correctly classified numbers, NN both chunks 1k");
+
+figure(2);
+for i = 1:10
+    if i == 1
+        index = 2;
+    else
+        index = i + 2;
+    end
+    subplot(4,3,index);
+    x = zeros(28, 28, "uint8");
+    x(:) = testv(error_indices(i),:);
+    image(x');
+    title("Incorrect, ans: " + num2str(i-1) + ...
+                   ", est: " + num2str(results_list(error_indices(i))));
+end
+sgtitle("Incorrectly classified numbers, NN both chunks 1k");
