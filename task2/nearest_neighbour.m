@@ -1,87 +1,90 @@
+%% Part 2, Task 1
+clc; clear all; close all;
 
-%% initialization
-
-load("./MNist_ttt4275/data_all.mat")
-subset_train = cell(60,1);
-subset_test = cell(10,1);
-
-for i = 1:60
-    if i < 11
-        subset_test{i} = testv(1 + (i-1)*1000:(i*1000),:)';
-    end
-    subset_train{i} = trainv(1 + (i-1)*1000:(i*1000),:);
+% Initialization
+if ~exist('num_test','var')
+    load("MNist_ttt4275/data_all.mat");
 end
 
-% counting containers:
-% start with 1000 by 1000 matrix
-% for each of the test subsets, 60 of these matrices are produced
-% vertical min_index of this matrix will give the image number in that
-% subset which matches best. 
+N            = 784;  % number of features per vector
+I            = 10;   % number of classes
+chunk_size   = 1000; % number of images per chunk
+train_chunks = num_train/chunk_size;
+test_chunks  = num_test/chunk_size;
 
-results_list = zeros(10000,1,'int8');
+% Note that chunk size should be set S.T. num_train and num_test
+% are both divisible by chunk size, as the program 
+% DOES NOT validate automatic index calculation.
 
-%% classifier
+ %% Task 1a: classify and find confusion matrix without majority voting
 
-% solver:
-% collect votes from each subset, then choose most popular number
-for i = 1:10
-    fprintf("testing subset: " + num2str(i) + "\n");
-    temp_count_mat = zeros(1000, 10, 'int8');
-    for j = 1:60
-        fprintf("\ttraining subset: " + num2str(j) + "\n");
-        A = dist(subset_train{j}, subset_test{i});
-        [M, subs_I] = min(A);
-        I = int32(subs_I' + (j-1)*1000);
-        values = int8(trainlab(I));
-        for k = 1:1000
-            temp_count_mat(k,values(k)+1) = ...
-                temp_count_mat(k,values(k)+1) + 1;
-        end
+tic
+
+% Helper function for chunk index ranges
+i_rng = @(i) 1 + chunk_size*(i-1):chunk_size*i;
+
+% Preallocation
+results_list        = zeros(num_test,1,'uint8');
+inner_chunk_scores  = zeros(train_chunks, chunk_size);
+inner_chunk_indices = zeros(train_chunks, chunk_size);
+indices             = zeros(1,chunk_size);
+
+for i = 1:test_chunks
+    
+    fprintf("Testing subset: " + num2str(i) + "\n");
+    
+    for j = 1:train_chunks
+        
+        fprintf("\tTraining subset: " + num2str(j) + "\n");
+        
+        [inner_chunk_scores(j,:), inner_chunk_indices(j,:)] = ...
+            min(dist(trainv(i_rng(j),:), testv(i_rng(i),:)'));
+        
     end
-    % note that temp_count_mats indices are offset by 1..
-    [M, num_offs_I] = max(temp_count_mat, [], 2);
-    num_I = int8(num_offs_I - 1);
-    results_list(1 + (i-1)*1000: i*1000) = num_I;
+    
+    [~, chunk_indices] = min(inner_chunk_scores);
+    
+    % didn't find a more clever way to do this assignment sadly
+    for j = 1:chunk_size
+        indices(j) = ...
+            (chunk_indices(j)-1)*chunk_size + ...
+            inner_chunk_indices(chunk_indices(j),j);
+    end
+    
+    results_list(i_rng(i)) = trainlab(indices);
 end
 
-save("NN_allSamples_both1kChunks.mat","results_list");
+% find confusion matrix and error rate
+NN_conf_mat = confusionmat(uint8(testlab), results_list);
+NN_err_rate = 1 - trace(NN_conf_mat)/num_test;
+T_NN        = toc;
 
-%% find confusion matrix and error rate
-% confusion matrix is, real values on vertical axis, probabilities 
-% for that given value on horizontal axis.
+% save results
+save("all_results_part2_task1_TEST.mat",...
+     "T_NN", "NN_conf_mat",  "NN_err_rate");
 
-% load("NN_allSamples_both1kChunks.mat")
-% load("./MNist_ttt4275/data_all.mat")
+%% Task 1b & 1c: plotting correct and incorrect classifications
 
-N              = size(testlab,1);
+% Finding images to plot
+error_indices  = zeros(10,1,"uint16");
+valid_indices  = zeros(10,1,"uint16");
 
-matrix_counter = zeros(10,10,"int16");
-total_counter  = zeros(10,1,"int16");
-
-error_indices  = zeros(10,1,"int16");
-valid_indices  = zeros(10,1,"int16");
-
-for i=1:N
+for i=1:num_test
     actual = testlab(i) + 1;      % offset by 1 for indexing
     est    = results_list(i) + 1; % offset by 1 for indexing
-    total_counter(actual) = total_counter(actual) + 1;
-    matrix_counter(actual,est) = ...
-        matrix_counter(actual,est) + 1;
-    %for plotting corrects and errors
+ 
     if valid_indices(actual) == 0 && actual == est
         valid_indices(actual) = i;
     elseif error_indices(actual) == 0 && actual ~= est
         error_indices(actual) = i;
     end
+    
+    if nnz([error_indices; valid_indices]) == 2*I
+       break; 
+    end
 end
 
-confusion_matrix = matrix_counter;
-error_rate = 1 - trace(confusion_matrix)/N;
-save("NN_confusion_and_errRate_allSamples_both1kChunks.mat",...
-    "confusion_matrix","error_rate");
-
-%% plotting corrects and errors
-
+% plotting correct
 figure(1);
 for i = 1:10
     if i == 1
@@ -94,10 +97,11 @@ for i = 1:10
     x = zeros(28, 28, "uint8");
     x(:) = testv(valid_indices(i),:);
     image(x');
-    title("Correct, ans: " + num2str(i-1));
+    title("Answer: " + num2str(i-1));
 end
 sgtitle("Correctly classified numbers, NN both chunks 1k");
 
+% plotting incorrect
 figure(2);
 for i = 1:10
     if i == 1
@@ -109,7 +113,7 @@ for i = 1:10
     x = zeros(28, 28, "uint8");
     x(:) = testv(error_indices(i),:);
     image(x');
-    title("Incorrect, ans: " + num2str(i-1) + ...
-                   ", est: " + num2str(results_list(error_indices(i))));
+    title("Answer: " + num2str(i-1) + ...
+          ", classified as: " + num2str(results_list(error_indices(i))));
 end
 sgtitle("Incorrectly classified numbers, NN both chunks 1k");
