@@ -23,11 +23,6 @@ T_cluster = toc;
 
 %% Task 2b: Running NN classification using clusters
 
-% this one looks at only the best fit for each number
-% then chooses the best fit from each number
-% should be subject to outliers where a single cluster has an exceptional
-% fit for one class, but the average fit is much better for another class
-
 tic
 best_dist_class    = zeros(I, num_test);
 results_dist_      = zeros(1,num_test);
@@ -45,24 +40,6 @@ NN_cluster_err_rate = (num_test - trace(NN_cluster_confmat))/num_test;
 T_NN_cluster        = toc;
 
 %% Task 2c: Running KNN, K=7
-
-% This one looks at the 7 best fits from all kmeans clusters
-% then does a majority vote among these. I'm not sure what to call it, 
-% but this one definitely does too much smoothing.
-% Kmeans should already have smoothed out outliers from training set.
-% thus, doing a majority vote on these smoothed templates means that you
-% end up with a "twice smoothed" decision.
-
-% Peformance here is slightly worse than the NN_cluster variety used in
-% task 2b: roughly 1% more error, and is usually half a second faster. 
-
-% This method probably useful for cases where the variance 
-% within each class is much bigger and the kmeans clusters
-% are liable to overlap between classes.
-
-% Might also be more useful as the number of clusters per class
-% increases as this increases the likelihood of outliers that 
-% coincidentally have the shortest distance. 
 
 tic
 K = 7;
