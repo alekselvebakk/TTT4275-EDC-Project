@@ -1,0 +1,25 @@
+
+# Results for first 30 train, last 20 test
+
+Confusion matrix for training: 
+
+30 &  0 &  0 \\
+ 0 & 28 &  2 \\
+ 0 &  0 & 30
+
+Confusion matrix for testing: 
+20 &  0 &  0 \\
+ 0 & 18 &  2 \\
+ 0 &  0 & 20 
+
+# Results for last 30 train, first 20 test
+
+Confusion matrix for training: 
+30 &  0 &  0 \\
+ 0 & 28 &  2 \\
+ 0 &  2 & 28
+
+Confusion matrix for testing: 
+20 &  0 &  0 \\
+ 0 & 20 &  0 \\
+ 0 &  0 & 20

@@ -1,0 +1,56 @@
+Test of classifier without first feature:
+Test of classifier without second feature:
+Test of classifier without both sepal features:
+Test of classifier with only fourth feature:
+
+
+\begin{equation}
+C_1 = \begin{bmatrix}
+ 30 &  0 &  0 \\
+  0 & 26 &  4 \\
+  0 &  0 & 30
+\end{bmatrix}, \hspace{4mm} C_2 = \begin{bmatrix}
+ 20 &  0 &  0 \\
+  0 & 19 &  1 \\
+  0 &  2 & 18
+\end{bmatrix}
+\end{equation}
+
+
+\begin{equation}
+C_1 = \begin{bmatrix}
+ 30 &  0 &    0 \\
+  0 &   28 &    2 \\
+  0 &    1 &   29
+\end{bmatrix}, \hspace{4mm} C_2 = \begin{bmatrix}
+ 20 &    0 &    0\\
+ 0 &   18 &    2\\
+  0 &    1 &   19
+\end{bmatrix}
+\end{equation}
+
+
+\begin{equation}
+C_1 = \begin{bmatrix}
+ 30 &    0 &    0 \\
+ 0 &   27 &    3 \\
+ 0 &    2 &   28
+\end{bmatrix}, \hspace{4mm} C_2 = \begin{bmatrix}
+ 20 &    0 &    0 \\
+ 0 &   19 &    1 \\
+ 0 &    2 &   18
+\end{bmatrix}
+\end{equation}
+
+
+\begin{equation}
+C_1 = \begin{bmatrix}
+ 30 &    0 &    0 \\
+  0 &   27 &    3 \\
+  0 &    1 &   29
+\end{bmatrix}, \hspace{4mm} C_2 = \begin{bmatrix} 
+ 20 &    0 &    0 \\
+  0 &   18 &    2 \\
+  0 &    2 &   18
+\end{bmatrix}
+\end{equation}
